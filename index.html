@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gra Wyborcza</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { background: #cce6ff; border: 1px solid black; display: block; margin: auto; }
+        .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid black; }
+        .controls { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .controls button { font-size: 20px; padding: 10px; }
+        .header { font-size: 18px; max-width: 600px; margin: auto; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <h1 class="header">Jedyna okazja do sterowania kandydatką.<br>Sprawdź co kryje się za 3 ikonkami.<br>Korzystaj ze strzałek.</h1>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    
+    <div class="controls">
+        <button onclick="movePlayer('left')">⬅️</button>
+        <button onclick="movePlayer('up')">⬆️</button>
+        <button onclick="movePlayer('down')">⬇️</button>
+        <button onclick="movePlayer('right')">➡️</button>
+    </div>
+    
+    <div id="popup" class="popup">
+        <p id="popupText"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+    
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+        
+        let player = { x: 50, y: 50, width: 96, height: 160 }; // Proporcje 3.2x5
+        let playerImg = new Image();
+        playerImg.src = "drukarnia.png";
+        
+        let goals = [
+            { x: 200, y: 100, type: "📖", image: "ksiazka.png", imageSize: 500 },
+            { x: 350, y: 200, type: "🎥", video: "twoj_film.mp4" },
+            { x: 500, y: 300, type: "✏️", image: "gif_animacja.gif", imageSize: 500 }
+        ];
+        
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            
+            goals.forEach(goal => {
+                ctx.font = "30px Arial";
+                ctx.fillText(goal.type, goal.x, goal.y + 30);
+            });
+        }
+        
+        function checkCollisions() {
+            goals.forEach((goal, index) => {
+                if (player.x < goal.x + 30 && player.x + player.width > goal.x && player.y < goal.y + 30 && player.y + player.height > goal.y) {
+                    showPopup(goal.video, goal.image, goal.imageSize);
+                    goals.splice(index, 1); 
+                }
+            });
+        }
+        
+        function showPopup(video, image, imageSize) {
+            let popup = document.getElementById("popup");
+            let popupText = document.getElementById("popupText");
+            
+            if (video) {
+                popupText.innerHTML = `<video width='300' autoplay controls><source src='${video}' type='video/mp4'></video>`;
+                popupText.querySelector("video").volume = 0.5;
+            } else if (image) {
+                let size = imageSize ? imageSize : 300;
+                popupText.innerHTML = `<img src='${image}' width='${size}'>`;
+            }
+            popup.style.display = "block";
+        }
+        
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+        
+        function movePlayer(direction) {
+            if (direction === "up") player.y -= 10;
+            if (direction === "down") player.y += 10;
+            if (direction === "left") player.x -= 10;
+            if (direction === "right") player.x += 10;
+            drawGame();
+            checkCollisions();
+        }
+        
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") movePlayer("up");
+            if (e.key === "ArrowDown") movePlayer("down");
+            if (e.key === "ArrowLeft") movePlayer("left");
+            if (e.key === "ArrowRight") movePlayer("right");
+        });
+        
+        playerImg.onload = drawGame;
+    </script>
+</body>
+</html>
