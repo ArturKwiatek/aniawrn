@@ -2,24 +2,25 @@
 <html>
 <head>
     <title>Gra Wyborcza</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        canvas { background: #cce6ff; border: 1px solid black; display: block; margin: auto; }
-        .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid black; }
-        .controls { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .controls button { font-size: 20px; padding: 10px; }
-        .header { font-size: 18px; max-width: 600px; margin: auto; line-height: 1.5; }
+        body { text-align: center; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        canvas { background: #cce6ff; border: 1px solid black; display: block; margin: auto; max-width: 100%; height: auto; }
+        .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid black; max-width: 90%; }
+        .controls { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; user-select: none; flex-wrap: wrap; }
+        .controls button { font-size: 24px; padding: 15px; flex: 1; max-width: 80px; }
+        .header { font-size: 16px; max-width: 90%; margin: auto; line-height: 1.5; padding: 10px; }
     </style>
 </head>
 <body>
     <h1 class="header">Jedyna okazja do sterowania kandydatką.<br>Sprawdź co kryje się za 3 ikonkami.<br>Korzystaj ze strzałek.</h1>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <canvas id="gameCanvas" width="300" height="200"></canvas>
     
     <div class="controls">
-        <button onclick="movePlayer('left')">⬅️</button>
-        <button onclick="movePlayer('up')">⬆️</button>
-        <button onclick="movePlayer('down')">⬇️</button>
-        <button onclick="movePlayer('right')">➡️</button>
+        <button ontouchstart="movePlayer('left'); event.preventDefault();" onmousedown="movePlayer('left'); event.preventDefault();">⬅️</button>
+        <button ontouchstart="movePlayer('up'); event.preventDefault();" onmousedown="movePlayer('up'); event.preventDefault();">⬆️</button>
+        <button ontouchstart="movePlayer('down'); event.preventDefault();" onmousedown="movePlayer('down'); event.preventDefault();">⬇️</button>
+        <button ontouchstart="movePlayer('right'); event.preventDefault();" onmousedown="movePlayer('right'); event.preventDefault();">➡️</button>
     </div>
     
     <div id="popup" class="popup">
@@ -31,14 +32,14 @@
         let canvas = document.getElementById("gameCanvas");
         let ctx = canvas.getContext("2d");
         
-        let player = { x: 50, y: 50, width: 96, height: 160 }; // Proporcje 3.2x5
+        let player = { x: 50, y: 50, width: 48, height: 80 }; // Zmniejszone dla ekranów mobilnych
         let playerImg = new Image();
         playerImg.src = "drukarnia.png";
         
         let goals = [
-            { x: 200, y: 100, type: "📖", image: "ksiazka.png", imageSize: 500 },
-            { x: 350, y: 200, type: "🎥", video: "twoj_film.mp4" },
-            { x: 500, y: 300, type: "✏️", image: "gif_animacja.gif", imageSize: 500 }
+            { x: 100, y: 50, type: "📖", image: "ksiazka.png", imageSize: 300 },
+            { x: 175, y: 100, type: "🎥", video: "twoj_film.mp4" },
+            { x: 250, y: 150, type: "✏️", image: "gif_animacja.gif", imageSize: 300 }
         ];
         
         function drawGame() {
@@ -46,14 +47,14 @@
             ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
             
             goals.forEach(goal => {
-                ctx.font = "30px Arial";
-                ctx.fillText(goal.type, goal.x, goal.y + 30);
+                ctx.font = "20px Arial";
+                ctx.fillText(goal.type, goal.x, goal.y + 20);
             });
         }
         
         function checkCollisions() {
             goals.forEach((goal, index) => {
-                if (player.x < goal.x + 30 && player.x + player.width > goal.x && player.y < goal.y + 30 && player.y + player.height > goal.y) {
+                if (player.x < goal.x + 20 && player.x + player.width > goal.x && player.y < goal.y + 20 && player.y + player.height > goal.y) {
                     showPopup(goal.video, goal.image, goal.imageSize);
                     goals.splice(index, 1); 
                 }
@@ -65,10 +66,10 @@
             let popupText = document.getElementById("popupText");
             
             if (video) {
-                popupText.innerHTML = `<video width='300' autoplay controls><source src='${video}' type='video/mp4'></video>`;
+                popupText.innerHTML = `<video width='250' autoplay controls><source src='${video}' type='video/mp4'></video>`;
                 popupText.querySelector("video").volume = 0.5;
             } else if (image) {
-                let size = imageSize ? imageSize : 300;
+                let size = imageSize ? imageSize : 250;
                 popupText.innerHTML = `<img src='${image}' width='${size}'>`;
             }
             popup.style.display = "block";
@@ -88,10 +89,10 @@
         }
         
         window.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp") movePlayer("up");
-            if (e.key === "ArrowDown") movePlayer("down");
-            if (e.key === "ArrowLeft") movePlayer("left");
-            if (e.key === "ArrowRight") movePlayer("right");
+            if (e.key === "ArrowUp") { movePlayer("up"); e.preventDefault(); }
+            if (e.key === "ArrowDown") { movePlayer("down"); e.preventDefault(); }
+            if (e.key === "ArrowLeft") { movePlayer("left"); e.preventDefault(); }
+            if (e.key === "ArrowRight") { movePlayer("right"); e.preventDefault(); }
         });
         
         playerImg.onload = drawGame;
